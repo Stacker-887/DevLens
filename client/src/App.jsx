@@ -20,7 +20,17 @@ function App() {
   }, [])
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/projects')
+    const token = localStorage.getItem('token')
+
+    if (!token) {
+      return
+    }
+
+    fetch('http://localhost:5000/api/projects', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
       .then((response) => response.json())
       .then((data) => {
         setProjects(data)
@@ -57,7 +67,7 @@ function App() {
             : connected
               ? 'GitHub Connected'
               : 'Connect GitHub'}
-          </button>
+        </button>
       </main>
 
       <section className="features">
@@ -88,17 +98,23 @@ function App() {
           onSubmit={async (event) => {
             event.preventDefault()
 
-            const response = await fetch('http://localhost:5000/api/projects', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                name: projectName,
-                language: projectLanguage,
-                status: 'Ready'
-              })
-            })
+            const token = localStorage.getItem('token')
+
+            const response = await fetch(
+              'http://localhost:5000/api/projects',
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                  name: projectName,
+                  language: projectLanguage,
+                  status: 'Ready'
+                })
+              }
+            )
 
             const newProject = await response.json()
 
@@ -127,7 +143,7 @@ function App() {
 
         <div>
           {projects.map((project) => (
-            <div key={project.id}>
+            <div key={project._id}>
               <h3>{project.name}</h3>
               <p>Language: {project.language}</p>
               <p>Status: {project.status}</p>
